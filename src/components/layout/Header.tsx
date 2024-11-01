@@ -1,14 +1,11 @@
-import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { MenuButton } from './MenuButton';
 
-import LoginModal from 'components/common/Modal/LoginModal';
+import { LoginModal } from 'components';
 import { supabase } from 'lib/supabase';
 import { PopularPosts } from 'pages/community';
-import { useIntroStore } from 'stores';
-import { useAuthStore } from 'stores';
-import { useModalStore } from 'stores';
+import { useIntroStore, useAuthStore, useModalStore } from 'stores';
 
 export const Header = () => {
   const location = useLocation();
@@ -50,12 +47,12 @@ export const Header = () => {
       {userInfo ? (
         <>
           <span>{userInfo.username}</span>
-          <button className='bg-blue-300 p-3' onClick={handleLogOut}>
+          <button className='p-3 bg-blue-300' onClick={handleLogOut}>
             로그아웃
           </button>
         </>
       ) : (
-        <button className='bg-blue-300 p-3' onClick={handleLogin}>
+        <button className='p-3 bg-blue-300' onClick={handleLogin}>
           로그인
         </button>
       )}

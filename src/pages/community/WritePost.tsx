@@ -5,12 +5,18 @@ import { createPost } from 'api';
 import { useModalDispatch } from 'context';
 import { useAuthStore, useSearchBookStore } from 'stores';
 
-export const WritePost = () => {
+export const WritePost = ({
+  edit = false,
+  initialContent,
+}: {
+  edit: boolean;
+  initialContent?: string;
+}) => {
   const dispatch = useModalDispatch();
   const userInfo = useAuthStore(state => state.userInfo);
   const { bookId, setBookId } = useSearchBookStore();
 
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState(initialContent || '');
 
   const queryClient = useQueryClient();
 
@@ -51,17 +57,20 @@ export const WritePost = () => {
         />
       </div>
       <div className='flex items-center justify-end h-full gap-5'>
-        <div
-          className='flex items-center justify-start gap-2 cursor-pointer'
-          onClick={() => {
-            dispatch({ type: 'OPEN_MODAL' });
-          }}
-        >
-          <img alt='search-book' className='w-5 h-5' src='/bookmark-search.svg' />
-          <button className='text-[#27364b] text-xs font-normal leading-none hidden md:block'>
-            Add Book
-          </button>
-        </div>
+        {!edit && (
+          <div
+            className='flex items-center justify-start gap-2 cursor-pointer'
+            onClick={() => {
+              dispatch({ type: 'OPEN_MODAL' });
+            }}
+          >
+            <img alt='search-book' className='w-5 h-5' src='/bookmark-search.svg' />
+
+            <button className='text-[#27364b] text-xs font-normal leading-none hidden md:block'>
+              Add Book
+            </button>
+          </div>
+        )}
         <div
           className='py-2.5 px-5 bg-[#243868] rounded-[100px] justify-center items-center gap-2.5 flex cursor-pointer'
           onClick={() => {

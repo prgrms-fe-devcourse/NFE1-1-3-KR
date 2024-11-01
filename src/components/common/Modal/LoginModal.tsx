@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { supabase } from 'lib/supabase';
 
-const LoginModal = () => {
+export const LoginModal = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -29,15 +29,15 @@ const LoginModal = () => {
 
   return (
     <div className='flex items-center justify-center'>
-      <div className='max-w-md w-full bg-white rounded-lg p-8'>
+      <div className='w-full max-w-md p-8 bg-white rounded-lg'>
         {/* Header */}
-        <div className='text-center mb-8'>
-          <h2 className='text-2xl font-bold text-gray-900 mb-2'>로그인</h2>
+        <div className='mb-8 text-center'>
+          <h2 className='mb-2 text-2xl font-bold text-gray-900'>로그인</h2>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className='mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg flex items-center'>
+          <div className='flex items-center px-4 py-3 mb-6 text-red-600 border border-red-200 rounded-lg bg-red-50'>
             <svg
               className='w-5 h-5 mr-2'
               fill='none'
@@ -58,7 +58,7 @@ const LoginModal = () => {
 
         {/* Google Login Button */}
         <button
-          className='w-full bg-white border border-gray-300 text-gray-800 hover:bg-gray-50 focus:ring-4 focus:ring-blue-100 font-medium rounded-lg text-sm px-5 py-4 text-center inline-flex items-center justify-center relative transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed'
+          className='relative inline-flex items-center justify-center w-full px-5 py-4 text-sm font-medium text-center text-gray-800 transition-all duration-200 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-blue-100 disabled:opacity-70 disabled:cursor-not-allowed'
           disabled={isLoading}
           onClick={handleLogin}
         >
@@ -88,5 +88,3 @@ const LoginModal = () => {
     </div>
   );
 };
-
-export default LoginModal;
