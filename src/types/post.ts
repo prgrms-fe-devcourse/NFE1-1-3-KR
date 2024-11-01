@@ -14,3 +14,24 @@ export interface UpdatePostParams {
   postId: string;
   formData: UpdatePostFormData;
 }
+
+export type PostDTO = {
+  post_id: string;
+  user_id: string;
+  title: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  book_id: string | null;
+  userinfo: {
+    username: string | null;
+    profile_url: string | null;
+  };
+  books: {
+    id: string;
+    title: string | null;
+    author: string | null;
+    isbn: string | null;
+    cover: string | null;
+  } | null;
+};

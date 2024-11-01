@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
@@ -29,6 +30,8 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+
+const queryClient = new QueryClient();
 
 function App() {
   const { reset, setSession, setIsLoading, setUserInfo } = useAuthStore();
@@ -83,12 +86,14 @@ function App() {
   }, []);
 
   return (
-    <BackgroundColorProvider>
-      <ModalProvider>
-        <RouterProvider router={router} />
-        <ModalRenderer />
-      </ModalProvider>
-    </BackgroundColorProvider>
+    <QueryClientProvider client={queryClient}>
+      <BackgroundColorProvider>
+        <ModalProvider>
+          <RouterProvider router={router} />
+          <ModalRenderer />
+        </ModalProvider>
+      </BackgroundColorProvider>
+    </QueryClientProvider>
   );
 }
 
