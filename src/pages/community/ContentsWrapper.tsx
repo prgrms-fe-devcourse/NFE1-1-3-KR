@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import { DetailPost } from './DetailPost';
 import { Post } from './Post';
 import { WritePost } from './WritePost';
 
@@ -12,7 +13,7 @@ export const ContentsWrapper = () => {
   const userInfo = useAuthStore(state => state.userInfo);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
 
-  const { data: posts, isLoading } = useQuery({
+  const { data: posts } = useQuery({
     queryKey: ['postList'],
     queryFn: getPostList,
     enabled: userInfo?.user_id !== undefined,
@@ -22,7 +23,7 @@ export const ContentsWrapper = () => {
     <div className='w-full h-full p-2'>
       <WritePost />
       {selectedPostId != null ? (
-        <div>선택</div>
+        <DetailPost onClose={setSelectedPostId} postId={selectedPostId} />
       ) : (
         <div className='w-full h-full p-4 overflow-y-scroll'>
           {posts?.map(post => (
