@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { createComment, deletePost, getPostById } from 'api';
+import { addLike, removeLike } from 'api/postLike';
 import { EditPostModal } from 'components';
 import { useAuthStore, useModalStore, usePostStore } from 'stores';
 
@@ -53,12 +54,45 @@ export const DetailPost = ({
     },
   });
 
+  const { mutate: likePost } = useMutation({
+    mutationFn: () => addLike({ postId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['post', postId] }).catch(error => {
+        console.error('Error invalidating queries:', error);
+      });
+    },
+    onError: error => {
+      console.error('Error liking post:', error);
+    },
+  });
+
+  const { mutate: unlikePost } = useMutation({
+    mutationFn: () => removeLike({ postId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['post', postId] }).catch(error => {
+        console.error('Error invalidating queries:', error);
+      });
+    },
+    onError: error => {
+      console.error('Error unliking post:', error);
+    },
+  });
+
   const openModal = useModalStore(state => state.openModal);
 
   const handleEdit = () => {
     setPostId(postId);
     setPostContent(post?.content as string);
     openModal('EDIT', { component: EditPostModal });
+  };
+
+  const handleLike = () => {
+    console.log(post?.isLiked);
+    if (post?.isLiked) {
+      unlikePost();
+    } else {
+      likePost();
+    }
   };
 
   return (
@@ -131,7 +165,9 @@ export const DetailPost = ({
               </span>
             </div>
             <div className='py-1.5 flex justify-start items-center gap-2 w-full' id='icons'>
-              <img alt='likes' src='/empty-heart.svg' />
+              <button onClick={handleLike}>
+                <img alt='likes' src={post?.isLiked ? '/full-heart.svg' : '/empty-heart.svg'} />
+              </button>
               <span className='text-[#333333] text-xs font-normal leading-none'>
                 {post?.likes_count}
               </span>
