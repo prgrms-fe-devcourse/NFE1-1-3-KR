@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { DetailPost } from './DetailPost';
@@ -6,15 +5,12 @@ import { Post } from './Post';
 import { WritePost } from './WritePost';
 
 import 'styles/scroll.css';
-import { getPostList } from 'api';
+import { usePostList } from 'hooks';
 
 export const ContentsWrapper = () => {
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
 
-  const { data: posts } = useQuery({
-    queryKey: ['postList'],
-    queryFn: getPostList,
-  });
+  const { data: posts } = usePostList();
 
   return (
     <div className='w-full h-full p-2'>

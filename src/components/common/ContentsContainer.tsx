@@ -15,7 +15,7 @@ export const ContentsContainer = ({ childNode }: { childNode: ReactNode }) => {
         <>
           <div className="absolute h-[100px] w-[250px] -right-[14rem] bottom-[38rem] bg-[url('/bg/cloud-1.svg')] bg-no-repeat bg-contain z-10"></div>
           <div className="absolute h-[100px] w-[250px] -left-[12rem] bottom-[15rem] bg-[url('/bg/cloud-3.svg')] bg-no-repeat bg-contain z-10"></div>
-          <Cloud
+          {/* <Cloud
             driftAmount={40}
             duration={15}
             initialX={-600}
@@ -28,7 +28,7 @@ export const ContentsContainer = ({ childNode }: { childNode: ReactNode }) => {
             initialX={-700}
             initialY={200}
             src='/bg/cloud-3.svg'
-          />
+          /> */}
         </>
       )}
       {location.pathname.startsWith('/profile') && (

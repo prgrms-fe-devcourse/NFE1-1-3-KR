@@ -1,9 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
-import { createComment, deletePost, getPostById } from 'api';
-import { addLike, removeLike } from 'api/postLike';
 import { EditPostModal } from 'components';
+import { useCreateComment, useDeletePost, useLikePost, usePost, useUnlikePost } from 'hooks';
 import { useAuthStore, useModalStore, usePostStore } from 'stores';
 
 export const DetailPost = ({
@@ -18,65 +16,12 @@ export const DetailPost = ({
   const [comment, setComment] = useState('');
   const { setPostId, setPostContent } = usePostStore();
 
-  const queryClient = useQueryClient();
+  const { data: post } = usePost(postId);
 
-  const { data: post } = useQuery({
-    queryKey: ['post', postId],
-    queryFn: () => getPostById(postId),
-  });
-
-  const { mutate: createNewComment } = useMutation({
-    mutationFn: () =>
-      createComment({
-        post_id: postId,
-        content: comment,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['post', postId] }).catch(error => {
-        console.error('Error invalidating queries:', error);
-      });
-    },
-    onError: error => {
-      console.error('Error creating post:', error);
-    },
-  });
-
-  const { mutate: deletePostById } = useMutation({
-    mutationFn: () => deletePost(postId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['postList'] }).catch(error => {
-        console.error('Error invalidating queries:', error);
-      });
-      onClose(null);
-    },
-    onError: error => {
-      console.error('Error deleting post:', error);
-    },
-  });
-
-  const { mutate: likePost } = useMutation({
-    mutationFn: () => addLike({ postId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['post', postId] }).catch(error => {
-        console.error('Error invalidating queries:', error);
-      });
-    },
-    onError: error => {
-      console.error('Error liking post:', error);
-    },
-  });
-
-  const { mutate: unlikePost } = useMutation({
-    mutationFn: () => removeLike({ postId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['post', postId] }).catch(error => {
-        console.error('Error invalidating queries:', error);
-      });
-    },
-    onError: error => {
-      console.error('Error unliking post:', error);
-    },
-  });
+  const { mutate: createNewComment } = useCreateComment(postId);
+  const { mutate: deletePostById } = useDeletePost(postId, onClose);
+  const { mutate: likePost } = useLikePost(postId);
+  const { mutate: unlikePost } = useUnlikePost(postId);
 
   const openModal = useModalStore(state => state.openModal);
 
@@ -87,13 +32,20 @@ export const DetailPost = ({
   };
 
   const handleLike = () => {
-    console.log(post?.isLiked);
     if (post?.isLiked) {
       unlikePost();
     } else {
       likePost();
     }
   };
+
+  const commentsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (commentsRef.current) {
+      commentsRef.current.scrollTop = commentsRef.current.scrollHeight;
+    }
+  }, [post?.comment?.length]);
 
   return (
     <div className='relative flex items-end justify-center w-full h-full p-[4.5rem]'>
@@ -129,7 +81,6 @@ export const DetailPost = ({
           <span onClick={handleEdit}>edit</span>
           <span
             onClick={() => {
-              console.log('delete');
               deletePostById();
             }}
           >
@@ -137,14 +88,22 @@ export const DetailPost = ({
           </span>
         </div>
       )}
-      <div className='flex flex-col w-full h-full p-[2.5rem] items-center justify-end border-2 border-[#afa18b] rounded-[40px] gap-4'>
+      <div className='flex flex-col w-full h-full p-[2.5rem] items-center justify-between border-2 border-[#afa18b] rounded-[40px] gap-4'>
         <div className='flex w-[80%] max-h-[50%] h-[15rem] gap-8'>
-          <img
-            alt='bookcover'
-            className='h-full rounded object-cover aspect-[200/295]'
-            src='/default-bookcover.png'
-          />
-          <div className='flex flex-col justify-between h-full py-4' id='info'>
+          {post?.books && (
+            <img
+              alt='bookcover'
+              className='h-full rounded object-cover aspect-[200/295]'
+              src={post?.books?.cover || '/default-bookcover.png'}
+            />
+          )}
+          <div
+            className='flex flex-col justify-between h-full py-4'
+            id='info'
+            style={{
+              width: post?.cover ? '50%' : '100%',
+            }}
+          >
             <div className='flex items-center w-full gap-4' id='user'>
               <img
                 alt='user-profile'
@@ -152,15 +111,17 @@ export const DetailPost = ({
                 src={post?.userinfo?.profile_url || '/default-userprofile.png'}
               />
               <div className='text-[#1c1c1c] text-base font-normal leading-snug'>
-                {post?.userinfo.username}
+                {post?.userinfo?.username}
               </div>
             </div>
             <div className='flex flex-col w-full gap-2' id='book'>
-              <span className='text-[#1c1c1c] text-xs font-normal leading-none'>
-                &lt;{post?.books.title}&gt; -{' '}
-                {post?.books.author.replace(/\(Authors?\)/g, '').trim()}
-              </span>
-              <span className='text-[#1c1c1c] text-base font-medium leading-snug max-h-[5rem] overflow-scroll'>
+              {post?.books && (
+                <span className='text-[#1c1c1c] text-xs font-normal leading-none'>
+                  &lt;{post?.books.title}&gt; -{' '}
+                  {post?.books.author.replace(/\(Authors?\)/g, '').trim()}
+                </span>
+              )}
+              <span className='text-[#1c1c1c] text-base font-medium leading-snug max-h-[5rem] overflow-y-auto'>
                 {post?.content}
               </span>
             </div>
@@ -179,8 +140,9 @@ export const DetailPost = ({
           </div>
         </div>
         <div
-          className='flex flex-col h-[40%] w-[80%] overflow-scroll gap-2 justify-end'
+          className='h-[40%] w-[80%] overflow-y-auto gap-2 items-end flex flex-col'
           id='comments'
+          ref={commentsRef}
         >
           {post?.comment.map(
             (com: {
@@ -190,17 +152,17 @@ export const DetailPost = ({
               userinfo: { username: string; profile_url: string };
             }) => (
               <div
-                className='px-2 py-2 bg-[#fcfcfc] rounded justify-start items-start gap-2.5 inline-flex'
+                className='px-2 py-2 w-full bg-[#fcfcfc] rounded justify-start items-start gap-2.5 inline-flex'
                 key={com.comment_id}
               >
                 <img
                   alt='user-profile'
                   className='relative w-8 h-8 rounded-2xl'
-                  src={com.userinfo.profile_url || '/default-userprofile.png'}
+                  src={com.userinfo?.profile_url || '/default-userprofile.png'}
                 />
                 <div className='inline-flex flex-col items-center justify-center gap-1 grow shrink basis-0'>
                   <div className="self-stretch text-[#1c1c1c] text-xs font-normal font-['Inknut Antiqua'] leading-none">
-                    {com.userinfo.username}
+                    {com.userinfo?.username}
                   </div>
                   <div className="self-stretch text-[#505050] text-xs font-normal font-['Inknut Antiqua'] leading-none">
                     {com.content}
@@ -229,7 +191,7 @@ export const DetailPost = ({
           <div
             className='px-5 py-2 bg-[#243868] rounded-[100px] justify-center items-center gap-2.5 flex text-white text-sm'
             onClick={() => {
-              createNewComment();
+              createNewComment({ postId, comment });
               setComment('');
             }}
           >

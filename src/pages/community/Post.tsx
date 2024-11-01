@@ -2,14 +2,13 @@ import type { PostDTO } from 'types';
 
 export const Post = ({ post }: { post: PostDTO }) => {
   return (
-    <div className='max-h-[16rem] h-full w-full px-2 py-[1.875rem] border-b border-[#243868] justify-center items-start gap-2 inline-flex cursor-pointer'>
-      <div
-        className='w-[165px] h-full rounded bg-cover bg-center'
-        style={{
-          backgroundImage: `url(${post.books?.cover || '/default-bookcover.png'})`,
-        }}
+    <div className='max-h-[16rem] h-full w-full px-2 py-[1.875rem] border-b border-[#243868] justify-center items-center gap-2 inline-flex cursor-pointer'>
+      <img
+        alt='book-cover'
+        className='h-[193px] rounded object-cover aspect-[200/295]'
+        src={post.books?.cover || '/default-bookcover.png'}
       />
-      <div className='inline-flex flex-col items-start justify-between w-full h-full px-2'>
+      <div className='flex-col items-start flex w-full h-full gap-[1.5rem] px-2'>
         <div className='inline-flex items-center self-stretch justify-start gap-4'>
           <img
             alt='user-profile'
@@ -27,12 +26,6 @@ export const Post = ({ post }: { post: PostDTO }) => {
             </span>
           )}
           <span className='text-[#333333] text-base font-medium leading-snug'>{post.content}</span>
-        </div>
-        <div className='px-2.5 py-1.5 flex justify-start items-center gap-2'>
-          <img alt='likes' src='/empty-heart.svg' />
-          <span className='text-[#333333] text-xs font-normal leading-none'>0</span>
-          <img alt='captions' src='/caption.svg' />
-          <span className='text-[#333333] text-xs font-normal leading-none'>0</span>
         </div>
       </div>
     </div>

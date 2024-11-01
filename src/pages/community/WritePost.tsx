@@ -1,51 +1,20 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { createPost, updatePost } from 'api';
 import { useModalDispatch } from 'context';
+import { useCreatePost, useUpdatePost } from 'hooks';
 import { useAuthStore, useSearchBookStore, useModalStore, usePostStore } from 'stores';
 
 export const WritePost = ({ edit = false }: { edit?: boolean }) => {
   const dispatch = useModalDispatch();
   const userInfo = useAuthStore(state => state.userInfo);
-  const { bookId, setBookId } = useSearchBookStore();
+  const { bookId } = useSearchBookStore();
   const { closeModal } = useModalStore();
   const { postId, postContent } = usePostStore();
 
   const [content, setContent] = useState(postContent || '');
 
-  const queryClient = useQueryClient();
-
-  const { mutate: createNewPost } = useMutation({
-    mutationFn: () =>
-      createPost({
-        title: '',
-        content: content,
-        book_id: bookId,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['postList'] }).catch(error => {
-        console.error('Error invalidating queries:', error);
-      });
-      setBookId(undefined);
-    },
-    onError: error => {
-      console.error('Error creating post:', error);
-    },
-  });
-
-  const { mutate: updatePostContent } = useMutation({
-    mutationFn: () =>
-      updatePost({ postId: postId ?? '', formData: { title: '', content: content } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['post', postId] }).catch(error => {
-        console.error('Error invalidating queries:', error);
-      });
-    },
-    onError: error => {
-      console.error('Error updating post:', error);
-    },
-  });
+  const { mutate: createNewPost } = useCreatePost(content, bookId);
+  const { mutate: updatePostContent } = useUpdatePost(postId as string, content);
 
   return (
     <div className='p-2 rounded-[60px] border-2 border-[#243868] justify-between items-start inline-flex w-full'>
