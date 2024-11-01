@@ -1,5 +1,7 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import { createComment, getPostById } from 'api';
 import { EditPostModal } from 'components';
 import { useAuthStore, useModalStore } from 'stores';
 
@@ -12,6 +14,30 @@ export const DetailPost = ({
 }) => {
   const [isSetting, setIsSetting] = useState(false);
   const { userInfo } = useAuthStore();
+  const [comment, setComment] = useState('');
+
+  const queryClient = useQueryClient();
+
+  const { data: post } = useQuery({
+    queryKey: ['post', postId],
+    queryFn: () => getPostById(postId),
+  });
+
+  const { mutate: createNewComment } = useMutation({
+    mutationFn: () =>
+      createComment({
+        post_id: postId,
+        content: comment,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['post', postId] }).catch(error => {
+        console.error('Error invalidating queries:', error);
+      });
+    },
+    onError: error => {
+      console.error('Error creating post:', error);
+    },
+  });
 
   const openModal = useModalStore(state => state.openModal);
 
@@ -29,18 +55,20 @@ export const DetailPost = ({
       >
         <img alt='close-button' className='object-contain w-full h-full' src='/chevron-left.svg' />
       </button>
-      <button
-        className='absolute top-[2rem] right-[1rem] flex items-center justify-center w-6 h-6 rounded-full bg-primary p-[0.15rem]'
-        onClick={() => {
-          setIsSetting(!isSetting);
-        }}
-      >
-        <img
-          alt='setting-button'
-          className='w-[90%] h-[90%] object-contain'
-          src='/Icon/setting.svg'
-        />
-      </button>
+      {userInfo?.user_id && (
+        <button
+          className='absolute top-[2rem] right-[1rem] flex items-center justify-center w-6 h-6 rounded-full bg-primary p-[0.15rem]'
+          onClick={() => {
+            setIsSetting(!isSetting);
+          }}
+        >
+          <img
+            alt='setting-button'
+            className='w-[90%] h-[90%] object-contain'
+            src='/Icon/setting.svg'
+          />
+        </button>
+      )}
       {isSetting && (
         <div
           className='absolute top-[4rem] right-[1rem] flex flex-col items-end p-4 bg-white shadow-md rounded-md gap-2 text-sm text-[#333333] cursor-pointer'
@@ -64,64 +92,88 @@ export const DetailPost = ({
               <img
                 alt='user-profile'
                 className='relative w-10 h-10 rounded-full'
-                src='https://via.placeholder.com/40x40'
+                src={post?.userinfo?.profile_url || '/default-userprofile.png'}
               />
-              <div className='text-[#1c1c1c] text-base font-normal leading-snug'>he2e2</div>
+              <div className='text-[#1c1c1c] text-base font-normal leading-snug'>
+                {post?.userinfo.username}
+              </div>
             </div>
             <div className='flex flex-col w-full gap-2' id='book'>
               <span className='text-[#1c1c1c] text-xs font-normal leading-none'>
-                &lt;Book Title&gt; - Author
+                &lt;{post?.books.title}&gt; -{' '}
+                {post?.books.author.replace(/\(Authors?\)/g, '').trim()}
               </span>
-              <span className='text-[#1c1c1c] text-base font-medium leading-snug h-[5rem] overflow-scroll'>
-                Lorem, ipsum dolor sit amet consectetur adipisicing elit. Architecto, eligendi
+              <span className='text-[#1c1c1c] text-base font-medium leading-snug max-h-[5rem] overflow-scroll'>
+                {post?.content}
               </span>
             </div>
             <div className='py-1.5 flex justify-start items-center gap-2 w-full' id='icons'>
               <img alt='likes' src='/empty-heart.svg' />
-              <span className='text-[#333333] text-xs font-normal leading-none'>0</span>
+              <span className='text-[#333333] text-xs font-normal leading-none'>
+                {post?.likes_count}
+              </span>
               <img alt='captions' src='/caption.svg' />
-              <span className='text-[#333333] text-xs font-normal leading-none'>0</span>
+              <span className='text-[#333333] text-xs font-normal leading-none'>
+                {post?.comment.length}
+              </span>
             </div>
           </div>
         </div>
-        <div className='flex flex-col h-[40%] w-[80%] overflow-scroll gap-2 ' id='comments'>
-          {Array.from({ length: 20 }).map((_, index) => (
-            <div
-              className='px-2 py-2 bg-[#fcfcfc] rounded justify-start items-start gap-2.5 inline-flex'
-              key={index}
-            >
-              <img
-                alt='user-profile'
-                className='relative w-8 h-8 rounded-2xl'
-                src='https://via.placeholder.com/32x32'
-              />
-              <div className='inline-flex flex-col items-center justify-center gap-1 grow shrink basis-0'>
-                <div className="self-stretch text-[#1c1c1c] text-xs font-normal font-['Inknut Antiqua'] leading-none">
-                  he2e2
-                </div>
-                <div className="self-stretch text-[#505050] text-xs font-normal font-['Inknut Antiqua'] leading-none">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore recusandae nobis
-                  itaque laudantium mollitia repudiandae, molestiae consectetur ex tempora iusto,
-                  libero molestias, harum numquam voluptate? Saepe expedita recusandae iste
-                  blanditiis.
+        <div
+          className='flex flex-col h-[40%] w-[80%] overflow-scroll gap-2 justify-end'
+          id='comments'
+        >
+          {post?.comment.map(
+            (com: {
+              comment_id: string;
+              content: string;
+              user_id: string;
+              userinfo: { username: string; profile_url: string };
+            }) => (
+              <div
+                className='px-2 py-2 bg-[#fcfcfc] rounded justify-start items-start gap-2.5 inline-flex'
+                key={com.comment_id}
+              >
+                <img
+                  alt='user-profile'
+                  className='relative w-8 h-8 rounded-2xl'
+                  src={com.userinfo.profile_url || '/default-userprofile.png'}
+                />
+                <div className='inline-flex flex-col items-center justify-center gap-1 grow shrink basis-0'>
+                  <div className="self-stretch text-[#1c1c1c] text-xs font-normal font-['Inknut Antiqua'] leading-none">
+                    {com.userinfo.username}
+                  </div>
+                  <div className="self-stretch text-[#505050] text-xs font-normal font-['Inknut Antiqua'] leading-none">
+                    {com.content}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ),
+          )}
         </div>
         <div className='w-[80%] px-2 py-1 rounded-[60px] border border-[#243868] justify-start items-center gap-2.5 inline-flex'>
           <div className='flex items-center justify-start w-full gap-4'>
             <img
               alt="user's profile"
               className='w-10 h-10 relative rounded-[100px] border border-[#ecf0f5]'
-              src='https://via.placeholder.com/40x40'
+              src={userInfo?.profile_url || '/default-userprofile.png'}
             />
             <input
               className='px-0.5 py-2 justify-start items-center gap-2.5 flex w-full'
+              onChange={e => {
+                setComment(e.target.value);
+              }}
               placeholder="What's on your mind?"
+              value={comment}
             />
           </div>
-          <div className='px-5 py-2 bg-[#243868] rounded-[100px] justify-center items-center gap-2.5 flex text-white text-sm'>
+          <div
+            className='px-5 py-2 bg-[#243868] rounded-[100px] justify-center items-center gap-2.5 flex text-white text-sm'
+            onClick={() => {
+              createNewComment();
+              setComment('');
+            }}
+          >
             Post
           </div>
         </div>

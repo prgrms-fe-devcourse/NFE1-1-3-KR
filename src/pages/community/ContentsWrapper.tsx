@@ -7,16 +7,13 @@ import { WritePost } from './WritePost';
 
 import 'styles/scroll.css';
 import { getPostList } from 'api';
-import { useAuthStore } from 'stores';
 
 export const ContentsWrapper = () => {
-  const userInfo = useAuthStore(state => state.userInfo);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
 
   const { data: posts } = useQuery({
     queryKey: ['postList'],
     queryFn: getPostList,
-    enabled: userInfo?.user_id !== undefined,
   });
 
   return (

@@ -9,7 +9,7 @@ export const WritePost = ({
   edit = false,
   initialContent,
 }: {
-  edit: boolean;
+  edit?: boolean;
   initialContent?: string;
 }) => {
   const dispatch = useModalDispatch();
