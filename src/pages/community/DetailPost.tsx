@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { createComment, getPostById } from 'api';
+import { createComment, deletePost, getPostById } from 'api';
 import { EditPostModal } from 'components';
 import { useAuthStore, useModalStore, usePostStore } from 'stores';
 
@@ -37,6 +37,19 @@ export const DetailPost = ({
     },
     onError: error => {
       console.error('Error creating post:', error);
+    },
+  });
+
+  const { mutate: deletePostById } = useMutation({
+    mutationFn: () => deletePost(postId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['postList'] }).catch(error => {
+        console.error('Error invalidating queries:', error);
+      });
+      onClose(null);
+    },
+    onError: error => {
+      console.error('Error deleting post:', error);
     },
   });
 
@@ -80,7 +93,14 @@ export const DetailPost = ({
           }}
         >
           <span onClick={handleEdit}>edit</span>
-          <span>delete</span>
+          <span
+            onClick={() => {
+              console.log('delete');
+              deletePostById();
+            }}
+          >
+            delete
+          </span>
         </div>
       )}
       <div className='flex flex-col w-full h-full p-[2.5rem] items-center justify-end border-2 border-[#afa18b] rounded-[40px] gap-4'>
