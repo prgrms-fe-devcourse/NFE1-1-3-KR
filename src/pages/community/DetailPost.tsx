@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { createComment, getPostById } from 'api';
 import { EditPostModal } from 'components';
-import { useAuthStore, useModalStore } from 'stores';
+import { useAuthStore, useModalStore, usePostStore } from 'stores';
 
 export const DetailPost = ({
   postId,
@@ -15,6 +15,7 @@ export const DetailPost = ({
   const [isSetting, setIsSetting] = useState(false);
   const { userInfo } = useAuthStore();
   const [comment, setComment] = useState('');
+  const { setPostId, setPostContent } = usePostStore();
 
   const queryClient = useQueryClient();
 
@@ -42,6 +43,8 @@ export const DetailPost = ({
   const openModal = useModalStore(state => state.openModal);
 
   const handleEdit = () => {
+    setPostId(postId);
+    setPostContent(post?.content as string);
     openModal('EDIT', { component: EditPostModal });
   };
 

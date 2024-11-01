@@ -8,7 +8,7 @@ export const EditPostModal = () => {
           <h2 className='mb-2 text-2xl font-bold text-gray-900'>Edit</h2>
         </div>
         <div>
-          <WritePost edit initialContent={'initialContent'} />
+          <WritePost edit />
         </div>
       </div>
     </div>

@@ -1,22 +1,18 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { createPost } from 'api';
+import { createPost, updatePost } from 'api';
 import { useModalDispatch } from 'context';
-import { useAuthStore, useSearchBookStore } from 'stores';
+import { useAuthStore, useSearchBookStore, useModalStore, usePostStore } from 'stores';
 
-export const WritePost = ({
-  edit = false,
-  initialContent,
-}: {
-  edit?: boolean;
-  initialContent?: string;
-}) => {
+export const WritePost = ({ edit = false }: { edit?: boolean }) => {
   const dispatch = useModalDispatch();
   const userInfo = useAuthStore(state => state.userInfo);
   const { bookId, setBookId } = useSearchBookStore();
+  const { closeModal } = useModalStore();
+  const { postId, postContent } = usePostStore();
 
-  const [content, setContent] = useState(initialContent || '');
+  const [content, setContent] = useState(postContent || '');
 
   const queryClient = useQueryClient();
 
@@ -35,6 +31,19 @@ export const WritePost = ({
     },
     onError: error => {
       console.error('Error creating post:', error);
+    },
+  });
+
+  const { mutate: updatePostContent } = useMutation({
+    mutationFn: () =>
+      updatePost({ postId: postId ?? '', formData: { title: '', content: content } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['post', postId] }).catch(error => {
+        console.error('Error invalidating queries:', error);
+      });
+    },
+    onError: error => {
+      console.error('Error updating post:', error);
     },
   });
 
@@ -74,7 +83,12 @@ export const WritePost = ({
         <div
           className='py-2.5 px-5 bg-[#243868] rounded-[100px] justify-center items-center gap-2.5 flex cursor-pointer'
           onClick={() => {
-            createNewPost();
+            if (edit) {
+              updatePostContent();
+              closeModal('EDIT');
+            } else {
+              createNewPost();
+            }
           }}
         >
           <div className='text-sm font-normal leading-tight text-white'>Post</div>
