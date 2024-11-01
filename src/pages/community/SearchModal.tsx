@@ -1,63 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
-
 import { useModalState, useModalDispatch } from 'context';
 
 export const SearchModal = () => {
   const { isOpen } = useModalState();
   const dispatch = useModalDispatch();
 
-  const [condition, setCondition] = useState('Title + Author');
-  const [isSelectOpen, setIsSelectOpen] = useState(false);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const handler = (event: MouseEvent) => {
-      if (containerRef.current !== null && !containerRef.current.contains(event.target as Node)) {
-        setIsSelectOpen(false);
-      }
-    };
-    document.addEventListener('click', handler);
-    return () => {
-      document.removeEventListener('click', handler);
-    };
-  }, []);
-
   if (!isOpen) return null;
 
   return (
     <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[9999]'>
       <div className='p-2.5 bg-white rounded-lg flex-col justify-start items-start gap-2.5 inline-flex w-auto'>
-        <div className='relative justify-start items-start gap-2.5 inline-flex flex-col md:flex-row'>
-          <div
-            className='p-2 rounded border border-[#afa18b] items-center gap-1.5 flex w-[9.5rem] justify-between cursor-pointer'
-            onClick={() => {
-              setIsSelectOpen(prev => !prev);
-            }}
-            ref={containerRef}
-          >
-            <div className='text-[#1c1c1c] text-sm font-normal leading-tight'>{condition}</div>
-            <img alt='chevron-bottom' className='relative w-4 h-4' src='/chevron-bottom.svg' />
-          </div>
-          {isSelectOpen && (
-            <div className='rounded min-w-[9.5rem] bg-white shadow-lg flex flex-col absolute -bottom-[4.5rem] z-[20000] p-3 gap-3 cursor-pointer'>
-              <p
-                className='text-[#3a3b3f] text-sm font-normal leading-tight'
-                onClick={() => {
-                  setCondition('Title + Author');
-                }}
-              >
-                Title + Author
-              </p>
-              <p
-                className='text-[#3a3b3f] text-sm font-normal leading-tight'
-                onClick={() => {
-                  setCondition('Publisher');
-                }}
-              >
-                Publisher
-              </p>
-            </div>
-          )}
+        <div className='relative justify-start items-start gap-2.5 inline-flex flex-row'>
           <div className='h-9 p-2 bg-[#fcfcfc] rounded border border-[#afa18b] justify-start items-center gap-1.5 flex'>
             <img alt='search-icon' className='w-[15px] h-[15px] relative' src='/search-icon.svg' />
             <input
@@ -66,7 +18,7 @@ export const SearchModal = () => {
             />
           </div>
           <button
-            className='w-9 h-9 bg-[#243868] rounded flex-col justify-center items-center gap-2.5 inline-flex absolute md:relative right-0'
+            className='w-9 h-9 bg-[#243868] rounded flex-col justify-center items-center gap-2.5 inline-flex'
             onClick={() => {
               dispatch({ type: 'CLOSE_MODAL' });
             }}
