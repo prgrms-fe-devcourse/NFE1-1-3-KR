@@ -1,7 +1,35 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+
+import { createPost } from 'api';
 import { useModalDispatch } from 'context';
+import { useAuthStore, useSearchBookStore } from 'stores';
 
 export const WritePost = () => {
   const dispatch = useModalDispatch();
+  const userInfo = useAuthStore(state => state.userInfo);
+  const { bookId } = useSearchBookStore();
+
+  const [content, setContent] = useState('');
+
+  const queryClient = useQueryClient();
+
+  const { mutate: createNewPost } = useMutation({
+    mutationFn: () =>
+      createPost({
+        title: '',
+        content: content,
+        book_id: bookId,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['postList'] }).catch(error => {
+        console.error('Error invalidating queries:', error);
+      });
+    },
+    onError: error => {
+      console.error('Error creating post:', error);
+    },
+  });
 
   return (
     <div className='p-2 rounded-[60px] border-2 border-[#243868] justify-between items-start inline-flex w-full'>
@@ -9,12 +37,16 @@ export const WritePost = () => {
         <img
           alt="user's profile"
           className='w-10 h-10 relative rounded-[100px] border border-[#ecf0f5]'
-          src='https://via.placeholder.com/40x40'
+          src={userInfo?.profile_url || '/default-userprofile.png'}
         />
         <input
           className='h-[33px] px-0.5 py-2 justify-start items-center gap-2.5 w-full text-sm'
+          onChange={e => {
+            setContent(e.target.value);
+          }}
           placeholder="What's on your mind?"
           type='text'
+          value={content}
         />
       </div>
       <div className='flex items-center justify-end h-full gap-5'>
@@ -29,7 +61,12 @@ export const WritePost = () => {
             Add Book
           </button>
         </div>
-        <div className='py-2.5 px-5 bg-[#243868] rounded-[100px] justify-center items-center gap-2.5 flex cursor-pointer'>
+        <div
+          className='py-2.5 px-5 bg-[#243868] rounded-[100px] justify-center items-center gap-2.5 flex cursor-pointer'
+          onClick={() => {
+            createNewPost();
+          }}
+        >
           <div className='text-sm font-normal leading-tight text-white'>Post</div>
         </div>
       </div>
