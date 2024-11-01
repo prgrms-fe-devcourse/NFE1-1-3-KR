@@ -2,7 +2,7 @@ import type { PostDTO } from 'types';
 
 export const Post = ({ post }: { post: PostDTO }) => {
   return (
-    <div className='max-h-[16rem] h-full w-full px-2 py-[1.875rem] border-b border-[#243868] justify-center items-start gap-2 inline-flex'>
+    <div className='max-h-[16rem] h-full w-full px-2 py-[1.875rem] border-b border-[#243868] justify-center items-start gap-2 inline-flex cursor-pointer'>
       <div
         className='w-[165px] h-full rounded bg-cover bg-center'
         style={{
