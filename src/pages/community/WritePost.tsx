@@ -8,7 +8,7 @@ import { useAuthStore, useSearchBookStore } from 'stores';
 export const WritePost = () => {
   const dispatch = useModalDispatch();
   const userInfo = useAuthStore(state => state.userInfo);
-  const { bookId } = useSearchBookStore();
+  const { bookId, setBookId } = useSearchBookStore();
 
   const [content, setContent] = useState('');
 
@@ -25,6 +25,7 @@ export const WritePost = () => {
       queryClient.invalidateQueries({ queryKey: ['postList'] }).catch(error => {
         console.error('Error invalidating queries:', error);
       });
+      setBookId(undefined);
     },
     onError: error => {
       console.error('Error creating post:', error);
