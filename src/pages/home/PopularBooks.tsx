@@ -26,7 +26,6 @@ const PopularBooks = () => {
   return (
     <>
       <Slider data={data} />
-      <div className='modal' data-flip-id='wheel__card'></div>
     </>
   );
 };

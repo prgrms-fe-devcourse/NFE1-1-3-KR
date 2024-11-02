@@ -17,6 +17,7 @@
     "axios": "^1.7.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "colorthief": "^2.6.0",
     "framer-motion": "^11.11.10",
     "gsap": "^3.12.5",
     "immer": "^10.1.1",
